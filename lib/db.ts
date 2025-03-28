@@ -23,22 +23,28 @@ export async function query(text: string, params?: any[]) {
 // Create a notification listener that returns a ReadableStream
 export function createMessageStream() {
   const encoder = new TextEncoder();
+  let isControllerActive = true;
+  let heartbeatInterval: NodeJS.Timeout;
+  let client: any = null;
 
   return new ReadableStream({
     async start(controller) {
       // Initial fetch of messages
       try {
-        const client = await pool.connect();
+        client = await pool.connect();
 
         // Send initial messages
         const { rows: initialMessages } = await client.query(
           "SELECT * FROM messages ORDER BY created_at DESC LIMIT 10",
         );
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ type: "initial", messages: initialMessages })}\n\n`,
-          ),
-        );
+
+        if (isControllerActive) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "initial", messages: initialMessages })}\n\n`,
+            ),
+          );
+        }
 
         // Setup PostgreSQL notification listener
         await client.query("LISTEN message_changes");
@@ -46,6 +52,8 @@ export function createMessageStream() {
         // Event handler for notifications
         client.on("notification", (notification) => {
           try {
+            if (!isControllerActive) return;
+
             const newMessage = JSON.parse(notification.payload);
             controller.enqueue(
               encoder.encode(
@@ -58,28 +66,64 @@ export function createMessageStream() {
         });
 
         // Keep connection alive with heartbeat
-        const heartbeat = setInterval(() => {
-          controller.enqueue(
-            encoder.encode(
-              `data: ${JSON.stringify({ type: "heartbeat", time: new Date().toISOString() })}\n\n`,
-            ),
-          );
-        }, 30000);
+        heartbeatInterval = setInterval(() => {
+          if (!isControllerActive) {
+            clearInterval(heartbeatInterval);
+            return;
+          }
 
-        // Clean up on stream close
-        return () => {
-          clearInterval(heartbeat);
-          client.query("UNLISTEN message_changes").catch(console.error);
-          client.release();
-        };
+          try {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ type: "heartbeat", time: new Date().toISOString() })}\n\n`,
+              ),
+            );
+          } catch (error) {
+            console.error("Heartbeat error:", error);
+            isControllerActive = false;
+            clearInterval(heartbeatInterval);
+          }
+        }, 30000);
       } catch (error) {
         console.error("Stream setup error:", error);
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ type: "error", error: "Connection failed" })}\n\n`,
-          ),
-        );
-        controller.close();
+
+        if (isControllerActive) {
+          try {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ type: "error", error: "Connection failed" })}\n\n`,
+              ),
+            );
+          } catch (enqueueError) {
+            console.error("Failed to send error message:", enqueueError);
+          }
+
+          isControllerActive = false;
+
+          if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+          }
+
+          if (client) {
+            client.query("UNLISTEN message_changes").catch(console.error);
+            client.release();
+          }
+
+          controller.close();
+        }
+      }
+    },
+
+    cancel() {
+      isControllerActive = false;
+
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
+
+      if (client) {
+        client.query("UNLISTEN message_changes").catch(console.error);
+        client.release();
       }
     },
   });
