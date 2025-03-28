@@ -3,6 +3,8 @@ import MessageList from "./components/MessageList";
 import { getMessages } from "./actions";
 import { Suspense } from "react";
 
+export const revalidate = 0;
+
 export default async function Home() {
   const initialMessages = await getMessages();
 
