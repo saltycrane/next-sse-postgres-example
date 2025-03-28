@@ -1,33 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Message } from "../actions";
 
-interface Message {
-  id: number;
-  content: string;
-  created_at: string;
-}
-
-export default function MessageList() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [status, setStatus] = useState("Connecting...");
+export default function MessageList({
+  initialMessages,
+}: {
+  initialMessages: Message[];
+}) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [status, setStatus] = useState("Connected");
 
   useEffect(() => {
-    // Initial fetch of messages
-    fetch("/api/messages")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.messages) {
-          setMessages(data.messages);
-        }
-      })
-      .catch((err) => {
-        console.error("Error fetching messages:", err);
-        setStatus("Failed to load messages");
-      });
-
     // Set up SSE connection
-    const eventSource = new EventSource("/api/sse");
+    const eventSource = new EventSource("/stream");
 
     eventSource.onopen = () => {
       setStatus("Connected");
