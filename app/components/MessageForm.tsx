@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function MessageForm() {
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -12,23 +12,23 @@ export default function MessageForm() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
+      const response = await fetch("/api/messages", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ content }),
       });
 
       if (response.ok) {
-        setContent('');
+        setContent("");
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error || 'Failed to send message'}`);
+        alert(`Error: ${error.error || "Failed to send message"}`);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
-      alert('Failed to send message');
+      console.error("Error sending message:", error);
+      alert("Failed to send message");
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +50,7 @@ export default function MessageForm() {
           disabled={isSubmitting || !content.trim()}
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300"
         >
-          {isSubmitting ? 'Sending...' : 'Send Message'}
+          {isSubmitting ? "Sending..." : "Send Message"}
         </button>
       </div>
     </form>
