@@ -1,9 +1,12 @@
-import { Pool } from 'pg';
+import { Pool } from "pg";
 
 // Create connection pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
 });
 
 // Helper function to execute queries
@@ -21,9 +24,12 @@ export async function query(text: string, params?: any[]) {
 export function createNotificationClient() {
   const client = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl:
+      process.env.NODE_ENV === "production"
+        ? { rejectUnauthorized: false }
+        : false,
   }).connect();
-  
+
   return client;
 }
 

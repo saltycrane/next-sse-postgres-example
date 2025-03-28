@@ -18,6 +18,7 @@ This is a demonstration of using Server-Sent Events (SSE) with Next.js App Route
    ```
 3. Set up your PostgreSQL database:
    ```bash
+   createdb your_database_name
    psql -d your_database_name -f database.sql
    ```
 4. Create a `.env.local` file based on `.env.local.example` and add your PostgreSQL connection URL.

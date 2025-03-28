@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write **/*.{js,ts,tsx,json}",
+    "tsc": "tsc"
   },
   "dependencies": {
     "next": "^14.0.3",
@@ -19,6 +21,9 @@
     "@types/pg": "^8.10.7",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.2.4",
+    "prettier": "^3.5.3",
     "typescript": "^5.2.2"
   }
 }
