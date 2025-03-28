@@ -1,7 +1,6 @@
 import { createMessageStream } from "@/lib/db";
-import { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const stream = createMessageStream();
 
   return new Response(stream, {
