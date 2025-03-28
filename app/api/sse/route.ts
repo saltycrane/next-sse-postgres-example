@@ -1,5 +1,4 @@
 import { createNotificationClient, query } from "@/lib/db";
-import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   // Set headers for SSE
@@ -18,12 +17,12 @@ export async function GET(request: Request) {
 
       try {
         // Setup PostgreSQL notification listener
-        const pgClient = await createNotificationClient();
+        const { pool, client } = await createNotificationClient();
 
-        await pgClient.query("LISTEN message_changes");
+        await client.query("LISTEN message_changes");
 
         // Event handler for notifications
-        pgClient.on("notification", async (notification) => {
+        client.on("notification", async (notification) => {
           const newMessage = JSON.parse(notification.payload);
           controller.enqueue(
             encoder.encode(
@@ -44,7 +43,8 @@ export async function GET(request: Request) {
         // Clean up on connection close
         request.signal.addEventListener("abort", () => {
           clearInterval(heartbeat);
-          pgClient.end();
+          client.release(); // Release client back to the pool
+          pool.end(); // End the pool connection
         });
       } catch (error) {
         console.error("SSE error:", error);

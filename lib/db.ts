@@ -21,16 +21,18 @@ export async function query(text: string, params?: any[]) {
 }
 
 // Create a separate client for listening to PostgreSQL notifications
-export function createNotificationClient() {
-  const client = new Pool({
+export async function createNotificationClient() {
+  const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl:
       process.env.NODE_ENV === "production"
         ? { rejectUnauthorized: false }
         : false,
-  }).connect();
+  });
 
-  return client;
+  const client = await pool.connect();
+
+  return { pool, client };
 }
 
 export default pool;
