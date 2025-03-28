@@ -2,12 +2,13 @@
 
 This is a demonstration of using Server-Sent Events (SSE) with Next.js App Router and PostgreSQL to build a real-time message board application.
 
+Build with "Edit with Copilot" Claude 3.7 Sonnect Thinking. (See commits for chat input.)
+
 ## Features
 
 - Real-time updates using Server-Sent Events
 - PostgreSQL LISTEN/NOTIFY for database change notifications
-- Next.js App Router API routes
-- React client components for displaying real-time data
+- Next.js App Router, React Server Components, Server Actions, Streaming
 
 ## Getting Started
 
