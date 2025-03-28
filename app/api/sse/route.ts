@@ -1,7 +1,7 @@
 import { createNotificationClient, query } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   // Set headers for SSE
   const encoder = new TextEncoder();
   const customReadable = new ReadableStream({
