@@ -1,13 +1,7 @@
 import { Pool } from "pg";
 
 // Create connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl:
-    process.env.DATABASE_USE_SSL === "true"
-      ? { rejectUnauthorized: false }
-      : false,
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Helper function to execute queries
 export async function query(text: string, params?: any[]) {
@@ -50,7 +44,7 @@ export function createMessageStream() {
         await client.query("LISTEN message_changes");
 
         // Event handler for notifications
-        client.on("notification", (notification) => {
+        client.on("notification", (notification: any) => {
           try {
             if (!isControllerActive) return;
 
@@ -128,5 +122,3 @@ export function createMessageStream() {
     },
   });
 }
-
-export default pool;
